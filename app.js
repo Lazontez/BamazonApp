@@ -35,7 +35,7 @@ function showAllProducts() {
             var product_price = res[v].price
             var product_quantity = res[v].stock_quantity
             console.log("\n --------------------------")
-            console.log("Item_ID: " + product_id + "\n Product Name: " + product_name + "\n Price: $" + product_price + "\n"+product_quantity+" Left in stock");
+            console.log("Item_ID: " + product_id + "\n Product Name: " + product_name + "\n Price: $" + product_price + "\n" + product_quantity + " Left in stock");
 
         };
         //End the connection and run the userPrompt function with 3 variables being passed through
@@ -54,7 +54,7 @@ function userPrompt(product_id, product_name, product_price, product_quantity) {
             type: "number",
             message: "Type in the products ID of the item you would like to buy.",
             name: "idPrompt"
-        },{
+        }, {
             type: "number",
             message: "How many units would you like to buy?",
             name: "orderAmount"
@@ -91,34 +91,33 @@ function connectToQueryForIdMatch(idSearch, orderAmount) {
         for (v = 0; v < data.length; v++) {
             // console.log('working')
             //check to see if the id searched is equal to the data and if th stock quantity is greater than the order amount
-            if (parseFloat(idSearch) == data[v].item_id && data[v].stock_quantity > orderAmount ) {
-                // console.log("houston thats enuf")
+            if (parseFloat(idSearch) == data[v].item_id && data[v].stock_quantity > orderAmount) {
+                console.log("\n calculating........ \n")
+                var updatedQuantity = data[v].stock_quantity - orderAmount
+                var price = data[v].price;
+                var total = parseFloat(price) * parseFloat(orderAmount);
+                connection.query("UPDATE products SET stock_quantity = ? WHERE item_id=?",
+                    [updatedQuantity, idSearch],
+                    function (err, res) {
+                        console.log("Your total is $" + total)
+                        endConnectionandExit(connection);
+                    }
+
+                )
             }
             //check to see if the id searched is equal to the products table id but the quantity is not enough
-            else if (parseFloat(idSearch) == data[v].item_id && data[v].stock_quantity < orderAmount){                
-                console.log("\n Sorry we do not have "+ orderAmount+" units of this product left. \n Current Stock = "+data[v].stock_quantity);
-                endConnectionandExit(connection)
+            else if (parseFloat(idSearch) == data[v].item_id && data[v].stock_quantity < orderAmount) {
+                console.log("\n Sorry we do not have " + orderAmount + " units of this product left. \n Current Stock = " + data[v].stock_quantity);
+                console.log("try again goodbye....")
+
+                endConnectionandExit(connection);
+                // inititalizeApp()
             }
         }
     })
 }
-
-function endConnectionandExit(connection){
-    console.log("try again  goodbye....")
+//End connection to mysql with a parameter for the connection properties
+function endConnectionandExit(connection) {
     connection.end()
 }
 
-
-
-// 6. The app should then prompt users with two messages.
-
-//    * The first should ask them the ID of the product they would like to buy.
-//    * The second message should ask how many units of the product they would like to buy.
-
-// 7. Once the customer has placed the order, your application should check if your store has enough of the product to meet the customer's request.
-
-//    * If not, the app should log a phrase like `Insufficient quantity!`, and then prevent the order from going through.
-
-// 8. However, if your store _does_ have enough of the product, you should fulfill the customer's order.
-//    * This means updating the SQL database to reflect the remaining quantity.
-//    * Once the update goes through, show the customer the total cost of their purchase.
